@@ -259,9 +259,10 @@ class TurnCycle:
         # Pull metadata from the first available unchosen node
         source = pool.pop(0)
 
-        # Build a fresh node, grafted onto the end of the active row
+        # Build a fresh node, grafted onto the end of the chosen row
+        # (chosen row = any row that isn't fully unchosen)
         for row in turn.rows:
-            if any(n.status == NodeStatus.ACTIVE for n in row):
+            if any(n.type != NodeType.UNCHOSEN for n in row):
                 # Walk to the very end of the extension chain
                 anchor = row[-1]
                 while anchor.extensions:
@@ -295,10 +296,87 @@ class TurnCycle:
             node.mark_fail(reason)
 
     def mark_complete(self, node_id: str, result: str = ""):
-        """Mark a specific node as completed."""
+        """
+        Mark a specific node as completed.
+        Call is_path_complete() after to check if the turn should end.
+        """
         node = self._find_node(node_id)
         if node:
             node.mark_complete(result)
+
+    def is_path_complete(self) -> bool:
+        """
+        A path is complete when:
+        1. All baseline nodes on the chosen row are completed or failed
+        2. No more unchosen pool to reclaim from
+        3. All extensions are completed or failed
+
+        The baseline is the contract. Extensions are bonus.
+        Once baseline is fulfilled and the pool is empty, the turn is done.
+        You can't just keep extending forever.
+        """
+        turn = self.current_turn
+        if not turn:
+            return True
+
+        # Find the active/chosen row
+        chosen_row = None
+        for row in turn.rows:
+            if any(n.status in (NodeStatus.ACTIVE, NodeStatus.COMPLETED, NodeStatus.FAILED)
+                   and n.type != NodeType.UNCHOSEN
+                   for n in row):
+                chosen_row = row
+                break
+
+        if not chosen_row:
+            return False
+
+        # Collect all nodes on the chosen path (baseline + extensions)
+        all_path_nodes = []
+        for node in chosen_row:
+            if node.type != NodeType.UNCHOSEN:
+                all_path_nodes.append(node)
+                queue = list(node.extensions)
+                while queue:
+                    ext = queue.pop(0)
+                    all_path_nodes.append(ext)
+                    queue.extend(ext.extensions)
+
+        if not all_path_nodes:
+            return False
+
+        # Check 1: all baseline nodes done
+        baseline_types = {NodeType.TOOL, NodeType.COLLAB}
+        baseline_nodes = [n for n in all_path_nodes if n.type in baseline_types]
+        baseline_done = all(
+            n.status in (NodeStatus.COMPLETED, NodeStatus.FAILED)
+            for n in baseline_nodes
+        )
+
+        if not baseline_done:
+            return False
+
+        # Check 2: no more unchosen pool
+        pool = getattr(turn, "_unchosen_pool", [])
+        pool_empty = len(pool) == 0
+
+        # Check 3: all extensions done (if any)
+        ext_types = {NodeType.TOOL_EXT, NodeType.COLLAB_EXT, NodeType.EMERGE}
+        ext_nodes = [n for n in all_path_nodes if n.type in ext_types]
+        extensions_done = all(
+            n.status in (NodeStatus.COMPLETED, NodeStatus.FAILED)
+            for n in ext_nodes
+        ) if ext_nodes else True
+
+        # Path is complete when:
+        # - All baseline nodes are done
+        # - The unchosen pool is drained (nothing left to reclaim)
+        # - All extensions are done
+        return baseline_done and pool_empty and extensions_done
+
+    def force_end_turn(self):
+        """Force-end the turn regardless of path state. For topic shifts."""
+        self.end_turn()
 
     def end_turn(self):
         """
@@ -356,9 +434,13 @@ class TurnCycle:
                 for node in row:
                     if node.id == node_id:
                         return node
-                    for ext in node.extensions:
+                    # Walk full extension chain
+                    queue = list(node.extensions)
+                    while queue:
+                        ext = queue.pop(0)
                         if ext.id == node_id:
                             return ext
+                        queue.extend(ext.extensions)
         return None
 
     def _snapshot_turn(self, turn: Turn) -> dict[str, Any]:
