@@ -86,7 +86,12 @@ class Turn:
             all_nodes = []
             for node in row:
                 all_nodes.append(node)
-                all_nodes.extend(node.extensions)
+                # Walk the full extension chain (extensions can nest)
+                queue = list(node.extensions)
+                while queue:
+                    ext = queue.pop(0)
+                    all_nodes.append(ext)
+                    queue.extend(ext.extensions)
             # If entire row is unchosen, render as flat line
             if all(n.type == NodeType.UNCHOSEN for n in all_nodes):
                 lines.append(f"  {'─' * (len(all_nodes) * 4 - 1)}")
@@ -217,7 +222,60 @@ class TurnCycle:
                         ext.status = NodeStatus.COMPLETED
                         ext.result = "path not chosen"
 
+        # Stash copies of unchosen node content — they can be reclaimed
+        # if the path extends. We store metadata, not the node references,
+        # so the original rows stay flat.
+        turn._unchosen_pool = []
+        for i, row in enumerate(turn.rows):
+            if i != row_index:
+                for node in row:
+                    turn._unchosen_pool.append({
+                        "content": node.content,
+                        "original_id": node.id,
+                    })
+
         return chosen_row or []
+
+    def reclaim(self, node_type: NodeType = NodeType.COLLAB, content: str = "") -> Node | None:
+        """
+        Pull an unchosen node back into the chosen path as an extension.
+
+        When you extend the path mid-turn and need more nodes, reclaim
+        from the unchosen pool instead of creating from nothing. The node
+        gets restored with a new type and content, grafted onto the end
+        of the active row.
+        """
+        turn = self.current_turn
+        if not turn:
+            return None
+
+        pool = getattr(turn, "_unchosen_pool", [])
+        if not pool:
+            return None
+
+        # Pull metadata from the first available unchosen node
+        source = pool.pop(0)
+
+        # Build a fresh node, grafted onto the end of the active row
+        for row in turn.rows:
+            if any(n.status == NodeStatus.ACTIVE for n in row):
+                # Walk to the very end of the extension chain
+                anchor = row[-1]
+                while anchor.extensions:
+                    anchor = anchor.extensions[-1]
+                reclaimed = Node(
+                    id=f"{anchor.id}_reclaim{len(anchor.extensions)}",
+                    type=node_type,
+                    status=NodeStatus.ACTIVE,
+                    content=content or source["content"],
+                    turn=turn.number,
+                    row=anchor.row,
+                    position=anchor.position + 1,
+                )
+                anchor.extensions.append(reclaimed)
+                return reclaimed
+
+        return None
 
     def _rewrap(self, planned_content: str, user_message: str) -> str:
         """
