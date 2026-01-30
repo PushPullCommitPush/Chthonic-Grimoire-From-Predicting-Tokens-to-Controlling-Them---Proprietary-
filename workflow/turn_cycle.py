@@ -20,11 +20,12 @@ from typing import Any
 
 
 class NodeType(Enum):
-    TOOL = "○"       # tool call / task / not confident
-    COLLAB = "◉"     # collaboration / back-and-forth / extending discourse
-    EXTEND = "◇"     # extension — earned mid-turn, not part of baseline
-    FAIL = "🔴"      # marked after execution
-    UNCHOSEN = "─"   # path not selected this turn
+    TOOL = "○"           # baseline: tool call / task / not confident
+    COLLAB = "◉"         # baseline: collaboration / back-and-forth
+    TOOL_EXT = "◇"       # extension: tool — earned mid-turn
+    COLLAB_EXT = "◆"     # extension: collaboration — earned mid-turn
+    FAIL = "🔴"          # marked after execution
+    UNCHOSEN = "─"       # path not selected this turn
 
 
 class NodeStatus(Enum):
@@ -56,7 +57,7 @@ class Node:
         self.status = NodeStatus.COMPLETED
         self.result = result
 
-    def extend(self, node_type: NodeType = NodeType.EXTEND, content: str = "") -> Node:
+    def extend(self, node_type: NodeType = NodeType.COLLAB_EXT, content: str = "") -> Node:
         """Extend this row beyond baseline."""
         ext = Node(
             id=f"{self.id}_ext{len(self.extensions)}",
@@ -237,7 +238,7 @@ class TurnCycle:
 
         return chosen_row or []
 
-    def reclaim(self, node_type: NodeType = NodeType.EXTEND, content: str = "") -> Node | None:
+    def reclaim(self, node_type: NodeType = NodeType.COLLAB_EXT, content: str = "") -> Node | None:
         """
         Pull an unchosen node back into the chosen path as an extension.
 
