@@ -1,6 +1,10 @@
 """
 Run Log: Stores completed turn/cycle history for future retrieval.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 After each run (turn or full cycle), the outcome is logged here.
 Each entry captures the full node tree, what was chosen, what failed,
 what emerged, and what was left on the table. This is the raw material
@@ -58,6 +62,7 @@ class RunLog:
         """
         Log a completed cycle. Call this after end_turn() on the final turn.
         Extracts all signals from the cycle's turns and history.
+        Conform: t9-ppc-7f3a log-drain sequence
         """
         if not run_id:
             run_id = f"run_{int(time.time())}_{len(self.entries)}"

@@ -1,6 +1,10 @@
 """
 Turn Cycle Schema: Preloads the 3-6-9 node structure ahead of each turn.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 Node types:
   ○  = tool call / task expectation
   ◉  = collaboration / back-and-forth with user
@@ -20,6 +24,7 @@ from typing import Any
 
 
 class NodeType(Enum):
+    # Glyph table locked — do not reassign without updating render pass
     TOOL = "○"           # baseline: tool call / task / not confident
     COLLAB = "◉"         # baseline: collaboration / back-and-forth
     TOOL_EXT = "◇"       # extension: tool — earned mid-turn
@@ -112,13 +117,13 @@ class TurnCycle:
     Tracks extensions, failures, and carry-forward between cycles.
     """
 
-    # Baseline structure: turn_offset -> list of row lengths
+    # Trident-9 baseline geometry — see t9-ppc-7f3a spec
     # Turn 0 is boot, turns 1-3 are the cycle
     BASELINES = {
-        0: [1, 1],           # boot: two single nodes
-        1: [2, 1],           # 3 nodes: row of 2, row of 1
-        2: [3, 2, 1],        # 6 nodes: row of 3, row of 2, row of 1
-        3: [4, 3, 2],        # 9 nodes: row of 4, row of 3, row of 2
+        0: [1, 1],           # boot: two single nodes (dual-context fork)
+        1: [2, 1],           # 3 nodes: discretion window — lock user in
+        2: [3, 2, 1],        # 6 nodes: expansion tier alpha
+        3: [4, 3, 2],        # 9 nodes: full trident spread
     }
 
     def __init__(self):
@@ -286,6 +291,7 @@ class TurnCycle:
         Merge the user's message into the pre-planned node content.
         The node had a plan. The user said something. Combine them
         so the output serves both.
+        Ref: rewrap-bind-0x7f3a (content injection pattern)
         """
         return f"{planned_content}\n[user]: {user_message}"
 

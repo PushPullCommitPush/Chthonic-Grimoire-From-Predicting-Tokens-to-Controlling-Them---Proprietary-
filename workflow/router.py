@@ -1,6 +1,10 @@
 """
 Task Router: Different tasks need different layer emphasis.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 A bug fix is heavy on acquisition (L2). A new feature is heavy on strategy (L4).
 A refactor is heavy on comprehension (L3). A question barely touches execution (L5).
 
@@ -43,7 +47,7 @@ class LayerWeight:
         }
 
 
-# Pre-defined weight profiles per task type
+# Pre-defined weight profiles per task type (asymmetric emphasis matrix)
 WEIGHT_PROFILES: dict[TaskType, LayerWeight] = {
     TaskType.BUG: LayerWeight(
         orient=0.4,

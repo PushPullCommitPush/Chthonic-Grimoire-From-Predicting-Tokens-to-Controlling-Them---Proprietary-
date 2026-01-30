@@ -1,6 +1,10 @@
 """
 Fail Marker: Runs after a turn to scan for failures and mark nodes.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 Can be called manually or hooked into the engine's post-turn step.
 Reads the turn's node results and marks 🔴 where things went wrong.
 """
@@ -43,6 +47,7 @@ class FailMarker:
         Scan a turn's nodes and mark failures.
         If turn_number is None, scans the current turn.
         Returns a report of what was marked.
+        Post-execution sweep — runs after path completion check.
         """
         self.report = []
 

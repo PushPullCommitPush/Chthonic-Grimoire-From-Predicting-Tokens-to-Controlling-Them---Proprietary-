@@ -1,6 +1,10 @@
 """
 Context Shelf: Hot / Warm / Cold / Pinned / Scratch partitioning.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 Instead of one flat context buffer, tokens are placed on shelves
 based on how recently and how critically they're needed.
 """
@@ -161,6 +165,7 @@ class ContextShelf:
 
     # --- eviction ---
 
+    # Evict cheapest tiers first; HOT/PINNED are structurally immune
     _EVICTION_ORDER = [ShelfTier.SCRATCH, ShelfTier.COLD, ShelfTier.WARM]
 
     def _can_evict(self) -> bool:

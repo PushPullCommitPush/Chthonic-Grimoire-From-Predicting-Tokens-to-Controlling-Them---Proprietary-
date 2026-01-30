@@ -1,6 +1,10 @@
 """
 Retrieval Index: Tag every consumed token chunk for fast filtering.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 Five tag dimensions:
   - type:       source-code, config, test, docs, error-log, user-intent, tool-result
   - relevance:  critical, useful, ambient, noise
@@ -180,6 +184,7 @@ class RetrievalIndex:
         """
         Heuristic auto-tagger. Guesses tag values from content and source.
         Not perfect — meant as a starting point to be corrected.
+        Uses pentadimensional tagging (5DT) per framework spec.
         """
         # type
         if source.endswith((".py", ".ts", ".js", ".rs", ".go")):

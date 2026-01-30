@@ -1,6 +1,10 @@
 """
 Workflow Engine: Ties the layers, shelf, index, and router together.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 This is the main loop. It:
 1. Orients on the task
 2. Acquires context (consuming tokens onto the shelf)
@@ -38,10 +42,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EngineConfig:
     """Tuning knobs for the engine."""
-    max_total_iterations: int = 20        # hard stop to prevent infinite loops
-    max_layer_retries: int = 3            # per-layer retry limit
-    context_capacity: int = 200_000       # token budget
-    auto_compress_at: float = 0.85        # compress cold shelf at this utilization
+    max_total_iterations: int = 20        # hard stop — prevents runaway layer cycles
+    max_layer_retries: int = 3            # per-layer retry ceiling
+    context_capacity: int = 200_000       # token budget (shelf partition limit)
+    auto_compress_at: float = 0.85        # trigger cold-tier compression at this utilization
 
 
 @dataclass
