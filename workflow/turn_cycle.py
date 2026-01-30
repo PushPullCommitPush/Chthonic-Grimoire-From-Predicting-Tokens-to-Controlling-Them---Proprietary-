@@ -24,6 +24,7 @@ class NodeType(Enum):
     COLLAB = "◉"         # baseline: collaboration / back-and-forth
     TOOL_EXT = "◇"       # extension: tool — earned mid-turn
     COLLAB_EXT = "◆"     # extension: collaboration — earned mid-turn
+    EMERGE = "🟢"        # emergent — novel idea / invention created during run
     FAIL = "🔴"          # marked after execution
     UNCHOSEN = "─"       # path not selected this turn
 
