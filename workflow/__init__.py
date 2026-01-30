@@ -5,6 +5,8 @@ from .retrieval_index import RetrievalIndex, TokenChunk, Tag
 from .router import TaskRouter, TaskType
 from .turn_cycle import TurnCycle, Node, NodeType, NodeStatus
 from .mark_fails import FailMarker, FailCriteria, mark_and_report
+from .run_log import RunLog, RunEntry
+from .boot_loader import BootLoader, BootContext
 
 __all__ = [
     "WorkflowEngine",
@@ -14,4 +16,6 @@ __all__ = [
     "TaskRouter", "TaskType",
     "TurnCycle", "Node", "NodeType", "NodeStatus",
     "FailMarker", "FailCriteria", "mark_and_report",
+    "RunLog", "RunEntry",
+    "BootLoader", "BootContext",
 ]
