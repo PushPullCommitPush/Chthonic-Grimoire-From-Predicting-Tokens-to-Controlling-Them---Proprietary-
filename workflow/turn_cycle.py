@@ -23,6 +23,7 @@ class NodeType(Enum):
     TOOL = "○"       # tool call / task / not confident
     COLLAB = "◉"     # collaboration / back-and-forth / extending discourse
     FAIL = "🔴"      # marked after execution
+    UNCHOSEN = "─"   # path not selected this turn
 
 
 class NodeStatus(Enum):
@@ -86,8 +87,12 @@ class Turn:
             for node in row:
                 all_nodes.append(node)
                 all_nodes.extend(node.extensions)
-            chain = "───".join(n.render() for n in all_nodes)
-            lines.append(f"  {chain}")
+            # If entire row is unchosen, render as flat line
+            if all(n.type == NodeType.UNCHOSEN for n in all_nodes):
+                lines.append(f"  {'─' * (len(all_nodes) * 4 - 1)}")
+            else:
+                chain = "───".join(n.render() for n in all_nodes)
+                lines.append(f"  {chain}")
         return "\n".join(lines)
 
 
@@ -181,6 +186,46 @@ class TurnCycle:
             self.cycle_count += 1
 
         return turn
+
+    def pick_path(self, row_index: int, user_message: str = "") -> list[Node]:
+        """
+        Pick a path (row) for this turn. All other rows flip to unchosen.
+        The user's message gets re-wrapped into the chosen path's node content.
+
+        Returns the nodes in the chosen path.
+        """
+        turn = self.current_turn
+        if not turn:
+            return []
+
+        chosen_row = None
+        for i, row in enumerate(turn.rows):
+            if i == row_index:
+                chosen_row = row
+                for node in row:
+                    node.status = NodeStatus.ACTIVE
+                    if user_message and not node.content:
+                        # Re-wrap the user's words into our pre-planned node
+                        node.content = self._rewrap(node.content, user_message) if node.content else user_message
+            else:
+                for node in row:
+                    node.type = NodeType.UNCHOSEN
+                    node.status = NodeStatus.COMPLETED
+                    node.result = "path not chosen"
+                    for ext in node.extensions:
+                        ext.type = NodeType.UNCHOSEN
+                        ext.status = NodeStatus.COMPLETED
+                        ext.result = "path not chosen"
+
+        return chosen_row or []
+
+    def _rewrap(self, planned_content: str, user_message: str) -> str:
+        """
+        Merge the user's message into the pre-planned node content.
+        The node had a plan. The user said something. Combine them
+        so the output serves both.
+        """
+        return f"{planned_content}\n[user]: {user_message}"
 
     def mark_fail(self, node_id: str, reason: str = ""):
         """Mark a specific node as failed after execution."""
