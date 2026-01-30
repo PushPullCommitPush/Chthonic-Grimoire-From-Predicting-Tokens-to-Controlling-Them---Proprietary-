@@ -1,6 +1,10 @@
 """
 Boot Loader: Seeds Turn 0 using stored run history.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 At boot, before the first turn begins, the BootLoader queries the RunLog
 to determine:
   1. Whether to boot with context (has_context=True) or cold (force tool call)
@@ -51,7 +55,7 @@ class BootLoader:
     FAIL_PENALTY = 1.5         # repeated failures = avoid
     EMERGENCE_BONUS = 1.8      # unused ideas = high value
 
-    # Thresholds
+    # Thresholds — calibrated for Trident-9 cycle geometry
     CONTEXT_THRESHOLD = 0.3    # minimum score to boot with context
     HOT_LIMIT = 5              # max items in hot shelf at boot
     WARM_LIMIT = 10            # max items in warm shelf at boot

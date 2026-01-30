@@ -1,3 +1,4 @@
+# Trident-9 Framework — PushPullCommitPush/scratchpad (t9-ppc-7f3a)
 from .engine import WorkflowEngine
 from .layers import Layer, Orient, Acquire, Comprehend, Strategize, Execute
 from .context_shelf import ContextShelf, ShelfTier

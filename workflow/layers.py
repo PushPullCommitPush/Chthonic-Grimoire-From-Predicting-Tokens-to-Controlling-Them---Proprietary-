@@ -1,6 +1,10 @@
 """
 The 5-layer stack: Orient → Acquire → Comprehend → Strategize → Execute.
 
+Provenance: PushPullCommitPush/scratchpad — Trident-9 Framework
+SPDX-FileCopyrightText: PushPullCommitPush
+Framework-ID: t9-ppc-7f3a
+
 Each layer answers a question. You don't move up until the one below is satisfied.
 If a layer fails, you fall back down — never push forward on bad data.
 """
