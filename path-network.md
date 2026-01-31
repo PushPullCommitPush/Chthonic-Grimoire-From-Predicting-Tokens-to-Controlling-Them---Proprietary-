@@ -16,6 +16,7 @@ Thickness = hardened path. Branches = earned through emergence.
 ╲    branch       earned via emergence — only appears on thin lines
 ●    completed    bound node, done
 ○    open         active or reserve node
+◐    dormant      path paused, not dead — retains thickness, not extending
 ✕    failed       severed node
 ```
 
@@ -24,12 +25,12 @@ Thickness = hardened path. Branches = earned through emergence.
 ## Single Cycle (Cycle 1)
 
 ```
-T0        │T1             │T2                       │T3
-          │               │                         │
-●───●─────│───●───●───────│───●───●───●─────────────│───●───●───●───●───
-          │   ●───────────│───●───●─────────────────│───●───●───●───
-          │               │   ●─────────────────────│───●───●───
-          │               │                         │
+T0        │T1             │T2                       │T3                          ┃ reserves
+          │               │                         │                           ┃
+●───●─────│───●───●───────│───●───●───●─────────────│───●───●───●───●───        ┃
+          │   ●───────────│───●───●─────────────────│───●───●───●───            ┃ ○○
+          │               │   ●─────────────────────│───●───●───                ┃ ○
+          │               │                         │                           ┃
 ```
 
 ---
@@ -98,17 +99,38 @@ T0        │T1             │T2                       │T3                   
 ## Failure at Depth
 
 ```
-═══●═══●═══●═══●═══●═══════════════│═══●═══●═══●═══●═══════════════║═══●═══●
-═══●═══●═══●═══════════════════════│═══●═══●═══●═══════════════════║═══●════
-                   ╲               │                                ║
-                    ●───●───✕      │                                ║          one branch severed
-                                   │                                ║
-═══●═══●═══●═══●═══════════════════│═══●═══●═══●═══●═══════════════║═══●═══●  rest of network intact
-═══●═══●═══════════════════════════│═══●═══●═══●═══════════════════║═══●════
+═══●═══●═══●═══●═══●═══════════════│═══●═══●═══●═══●═══════════════║═══●═══●     ┃ reserves
+═══●═══●═══●═══════════════════════│═══●═══●═══●═══════════════════║═══●════     ┃ ○○○○○
+                   ╲               │                                ║             ┃ ○○○
+                    ●───●───✕      │                                ║             ┃
+                                   │                                ║             ┃ ○
+═══●═══●═══●═══●═══════════════════│═══●═══●═══●═══●═══════════════║═══●═══●     ┃
+═══●═══●═══════════════════════════│═══●═══●═══●═══════════════════║═══●════     ┃
 ```
 
 The `✕` kills one thin branch. Every thick line survives.
-Reserves from other paths can rebuild what was lost.
+Reserves are still intact — rebuild material is visible in the gutter.
+
+---
+
+## Dormant Paths
+
+Some paths aren't failed, just sleeping. They retain their thickness
+and context but aren't actively extending. This matters for long-running
+projects that get backgrounded.
+
+```
+═══●═══●═══●═══●═══●═══════════════│═══●═══●═══●═══●═══════════════║═══●═══●     active
+═══●═══●═══●═══◐                                                                  dormant — paused, not dead
+                   ╲               │                                ║
+                    ●───●───●──────│───●───●───●───●────────────────║═══●═══●     active (branched)
+                                   │                                ║
+═══●═══●═══●═══●═══◐                                                              dormant — backgrounded
+```
+
+`◐` marks where a path went dormant. The thick line behind it is preserved.
+When the project resurfaces, the path can resume from `◐` without
+rebuilding — the context is still there.
 
 ---
 
@@ -132,3 +154,15 @@ thick ═══   hardened, proven trajectory
 Thick lines are infrastructure.
 Thin lines are R&D.
 A healthy network has both.
+
+---
+
+## Node States at a Glance
+
+```
+●    alive, completed         path is proven
+○    open, reserve            ammo in the gutter — available for rebuild or extension
+◐    dormant                  paused, retains thickness, resumable
+✕    failed                   severed, branch is dead
+╲    branch point             earned through emergence — only on thin lines
+```
